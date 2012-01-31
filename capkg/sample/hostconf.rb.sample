@@ -1,0 +1,121 @@
+module Capkg
+  module Settings
+    # Specify the default log-level.
+    #  You can use the following values.
+    #   - CAPKG_LOG_DEBUG
+    #   - CAPKG_LOG_NOTICE
+    #   - CAPKG_LOG_INFO
+    #   - CAPKG_LOG_MESSAGE
+    #   - CAPKG_LOG_ERROR
+    #  CAPKG_LOG_MESSAGE is the default.
+    #
+    # CAPKG_LOG_DEFAULT=CAPKG_LOG_ERROR
+
+    # Specify the expire of the logs as days.
+    #  90 days is the default.
+    #
+    # LOG_EXPIRE_DATE=90      
+
+    # Specify the default namespace
+    #  'default' is the default.
+    # 
+    # NAMESPACE='default'
+
+    # Specify the means of fetching.
+    #  You can use the following values.
+    #   - 'ssh'  
+    #   - 'http'  
+    #  'ssh' is the default.
+    #  You must specify HTTP_REPOSITORY as the uri of repository
+    #   also you can use following
+    #    - HTTP_PROXY 
+    #    - HTTP_REPOSITORY_CERT 
+    #   if You use 'http'
+    #
+    # FETCH_METHOD             = 'ssh'
+
+    # Specify the means of controling the repository
+    #  You can use the following values.
+    #   - 'ssh'  
+    #   - 'http'  
+    #  'ssh' is the default.
+    #  You must specify HTTP_REPOSITORY as the uri of repository 
+    #   also you can use following
+    #    - HTTP_PROXY 
+    #    - HTTP_REPOSITORY_CERT 
+    #   if You use 'http'
+    # REPOSITORY_METHOD        = 'ssh'
+    # 
+    #  This is the example of the DAV setting in apache.
+    #  == Dav settings ( the part of the httpd.conf ) ==
+    #    # HTTP_REP=http://<hostname>/capkg-rep/
+    #    # REMOTE_REP_PATH= '/usr/local/capkg-rep'
+    #    DAVLockDB /usr/local/apache2/var/DAVLock
+    #    Alias /capkg-rep/ /usr/local/capkg-rep/
+    #    <Directory /usr/local/capkg-rep/>
+    #        Options Indexes FollowSymLinks
+    #        AllowOverride none
+    #        Order allow,deny
+    #        Allow from all
+    #    </Directory>
+
+    # HTTP_REPOSITORY= nil
+    # HTTP_REPOSITORY_CERT     = nil
+    # HTTP_PROXY=nil
+    # HTTP_PROXY='http://proxy.host:8080/'
+
+    # Specify the repository host and path.
+    #  'localhost' and '/usr/local/capkg-rep' are the default.
+    #
+    # SSH_REPOSITORY_HOST = 'localhost'
+    # SSH_REPOSITORY_PATH = '/usr/local/capkg-rep'
+
+    # Specify the working directory on the target-host.
+    #  '/usr/local/capkg' is the default.
+    #
+    # CAPKG_BASE= '/usr/local/capkg'
+
+    # Specify the process and directory owner.
+    #  'root:bin' is the default.
+    #
+    # RUNNER='root'
+    # GROUP='bin'
+
+    # MD5_CHECK                = 'no'
+    # MD5_FETCH_METHOD         = nil
+    # MD5_REPOSITORY_METHOD    = nil
+    # MD5_HTTP_REPOSITORY      = nil
+    # MD5_HTTP_REPOSITORY_CERT = nil
+    # MD5_SSH_REPOSITORY_HOST  = nil
+    # MD5_SSH_REPOSITORY_PATH  = nil
+
+
+    NOARCH='NoArch'
+    # Specify the command of recognizing the UNAME of target-host.
+    #  The following is the default.
+    #
+    # GET_UNAME_CMD = 'head -1 /etc/issue| sed '+"'"+'s/^\(Fedora\|Ubuntu\|Debian\|CentOS\|Red Hat\)[^0-9]\+\([0-9]\+\).*$/\1\2-/'+"'"+'|tr -d \\\\n[:space:] ;uname -m'
+
+    # Specify the relation of the UNAME.
+    #  The following is the default.
+    # 
+    # UNAME_RULE = {
+    #   NOARCH => [],
+    #   'Linux' => [NOARCH],
+    #   'Linux-i686' => ['Linux'],
+    #   'Linux-x86_64' => ['Linux'],
+    #   'Fedora' => ['Linux'],
+    #   'Fedora-i686' => ['Fedora','Linux-i686'],
+    #   'Fedora-x86_64' => ['Fedora','Linux-x86_64'],
+    #   'Debian' => ['Linux'],
+    #   'Debian-i686' => ['Debian','Linux-i686'],
+    #   'Debian-x86_64' => ['Debian','Linux-x86_64'],
+    #   'CentOS' => ['Linux'],
+    #   'CentOS-i686' => ['CentOS','Linux-i686'],
+    #   'CentOS-x86_64' => ['CentOS','Linux-x86_64'],
+    #   'Ubuntu' => ['Linux'],
+    #   'Ubuntu-i686' => ['Ubuntu','Linux-i686'],
+    #   'Ubuntu-x86_64' => ['Ubuntu','Linux-x86_64'],
+    # }
+  end
+end

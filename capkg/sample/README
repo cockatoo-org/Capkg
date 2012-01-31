@@ -1,0 +1,114 @@
+##################################
+# SAMPLE SETUP 
+##################################
+
+# SETUP RUBY AND CAPISTRANO
+
+# SETUP CAPKG
+cd <path to sampe>
+cp sample/TEST.rb ../config/TEST.rb
+../config/capkg.sh createrep
+../config/capkg.sh self
+
+  => It'll be installed in  ~/.capkg/
+
+# SEE *.capkcf you will find it easy to understand..
+
+# CONFIRM SETUPED
+~/.capkg/config/capkg.sh search
+
+# TEST.rb is setting about TEST Namespace
+
+
+##################################
+# Pacage operations 1
+##################################
+# CREATE PACKAGE ( 1.0.0 )
+~/.capkg/config/capkg.sh create -c P1-1.capkcf 
+~/.capkg/config/capkg.sh create -c P2-1.capkcf 
+
+# UPLOAD PACKAGE (release 1.0.0 packages)
+~/.capkg/config/capkg.sh upload -c P1-2.capkcf 
+~/.capkg/config/capkg.sh upload -c P2-2.capkcf 
+
+# CONFIRM UPLOADED
+~/.capkg/config/capkg.sh search -a
+
+# CHECK REPOSITORY
+ls -lR /tmp/REP/
+
+##################################
+# Install pacages
+##################################
+# INSTALL PACKAGES
+~/.capkg/config/capkg.sh setup -r localhost # Setup target hosts, It have to run at the first time.
+~/.capkg/config/capkg.sh install -p P2  -r localhost
+
+# SEE 
+ls -lR /tmp/TEST/
+
+##################################
+# Pacage operations 2
+##################################
+# CREATE PACKAGE ( 2.0.0 )
+~/.capkg/config/capkg.sh create -c P1-2.capkcf 
+~/.capkg/config/capkg.sh create -c P2-2.capkcf 
+
+# UPLOAD PACKAGE (release 2.0.0 packages)
+~/.capkg/config/capkg.sh upload -c P1-1.capkcf 
+~/.capkg/config/capkg.sh upload -c P2-1.capkcf 
+
+##################################
+# Update pacages
+##################################
+# INSTALL PACKAGES
+~/.capkg/config/capkg.sh install -p P2  -r localhost
+
+# SEE 
+ls -lR /tmp/TEST/
+
+##################################
+# Downgrade pacages
+##################################
+# INSTALL PACKAGES
+~/.capkg/config/capkg.sh install -p P2  -v 1.0.0 -r localhost --downgrade
+
+# SEE 
+ls -lR /tmp/TEST/
+
+##################################
+# Uninstall pacages
+##################################
+# UNINSTALL PACKAGES
+~/.capkg/config/capkg.sh uninstall -p P1 -r localhost
+
+# SEE 
+ls -lR /tmp/TEST/
+
+
+##################################
+# Invalidate uploded pacages
+##################################
+~/.capkg/config/capkg.sh invalidate -p P1 -v 2.0.0
+~/.capkg/config/capkg.sh invalidate -p P2 -v 2.0.0
+
+# CONFIRM INVALIDATED
+~/.capkg/config/capkg.sh search -a
+
+
+##################################
+# Other informations
+##################################
+# It is possible to specify the target hosts multipuly
+# -r option
+> -r host1 -r host2 -r host3
+# -l option
+> -l target.hosts
+== content of target.hosts ==
+host1
+host2
+host3
+
+
+# HELP
+~/.capkg/config/capkg.sh help
