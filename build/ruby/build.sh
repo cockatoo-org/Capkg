@@ -12,7 +12,7 @@ if [ "$?" != "0" ];then
     exit 1;
 fi
 # check & update cert
-run curl https://github.com/ -o /dev/null
+curl https://github.com/ -o /dev/null
 if [ "$?" = "60" ];then
     echo 'The SSL cert file (OS bundle) is probably obusolute.'
     echo 'Do you update it ? [Y/N]'

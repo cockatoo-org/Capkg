@@ -21,7 +21,7 @@ cp sample/TEST.rb ../config/TEST.rb
 
 
 ##################################
-# Pacage operations 1
+# Package operations 1
 ##################################
 # CREATE PACKAGE ( 1.0.0 )
 ~/.capkg/config/capkg.sh create -c P1-1.capkcf 
@@ -38,7 +38,7 @@ cp sample/TEST.rb ../config/TEST.rb
 ls -lR /tmp/REP/
 
 ##################################
-# Install pacages
+# Install packages
 ##################################
 # INSTALL PACKAGES
 ~/.capkg/config/capkg.sh setup -r localhost # Setup target hosts, It have to run at the first time.
@@ -48,7 +48,7 @@ ls -lR /tmp/REP/
 ls -lR /tmp/TEST/
 
 ##################################
-# Pacage operations 2
+# Package operations 2
 ##################################
 # CREATE PACKAGE ( 2.0.0 )
 ~/.capkg/config/capkg.sh create -c P1-2.capkcf 
@@ -59,7 +59,7 @@ ls -lR /tmp/TEST/
 ~/.capkg/config/capkg.sh upload -c P2-1.capkcf 
 
 ##################################
-# Update pacages
+# Update packages
 ##################################
 # INSTALL PACKAGES
 ~/.capkg/config/capkg.sh install -p P2  -r localhost
@@ -68,7 +68,7 @@ ls -lR /tmp/TEST/
 ls -lR /tmp/TEST/
 
 ##################################
-# Downgrade pacages
+# Downgrade packages
 ##################################
 # INSTALL PACKAGES
 ~/.capkg/config/capkg.sh install -p P2  -v 1.0.0 -r localhost --downgrade
@@ -77,7 +77,7 @@ ls -lR /tmp/TEST/
 ls -lR /tmp/TEST/
 
 ##################################
-# Uninstall pacages
+# Uninstall packages
 ##################################
 # UNINSTALL PACKAGES
 ~/.capkg/config/capkg.sh uninstall -p P1 -r localhost
@@ -87,7 +87,7 @@ ls -lR /tmp/TEST/
 
 
 ##################################
-# Invalidate uploded pacages
+# Invalidate uploded packages
 ##################################
 ~/.capkg/config/capkg.sh invalidate -p P1 -v 2.0.0
 ~/.capkg/config/capkg.sh invalidate -p P2 -v 2.0.0
@@ -95,6 +95,14 @@ ls -lR /tmp/TEST/
 # CONFIRM INVALIDATED
 ~/.capkg/config/capkg.sh search -a
 
+
+##################################
+# Generate package definition
+##################################
+ ~/.capkg/config/capkg.sh generate -p TEST  -i /tmp -s TEST/
+
+# CONFIRM DEFINITION
+cat TEST.capkcf
 
 ##################################
 # Other informations
