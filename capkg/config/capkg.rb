@@ -6,7 +6,7 @@
 #   Date: 2011/05/26
 require 'open3'
 module Capkg
-  VERSION = "1.1.11"
+  VERSION = "1.1.12"
   SELF_NAME = 'CAPKG'
   LOCAL_CAPKG_DIR = File.dirname(__FILE__)
   # Log lv
@@ -299,19 +299,19 @@ module Capkg
     end
     # Todo: Should not be fork ...
     def self.rm(dir)
-      run_system('rm -rf ' + dir)
+      run_system('rm -rf \'' + dir + '\'')
     end
     def self.mkdir(dir)
-      run_system('mkdir -p ' + dir)
+      run_system('mkdir -p \'' + dir + '\'')
     end
     def self.mv(src,dst)
-      run_system('mv -fT ' + src + ' ' + dst)
+      run_system('mv -fT \'' + src + '\' \'' + dst + '\'')
     end
     def self.cp(src,dst)
-      run_system('cp -fT ' + src + ' ' + dst)
+      run_system('cp -fT \'' + src + '\' \'' + dst + '\'')
     end
     def self.ln(src,dst)
-      run_system('ln -sfn ' + src + ' ' + dst)
+      run_system('ln -sfn \'' + src + '\' \'' + dst + '\'')
     end
     def self.wget(src,dst)
       run_system(sprintf('wget  --retry-connrefused -q -O %s %s',dst,src))
@@ -1301,50 +1301,50 @@ module Capkg
         |dst,src,perm,own|
         LocalCmd.mkdir(tmp_base+'/'+dst)
         # activate
-        activate.printf("if [ -d %s ];then mkdir -p %s/%s;fi\n",dst,p_base_inst_bk,dst)
-        activate.printf("mkdir -p %s || exit 1\n",dst)
+        activate.printf("if [ -d '%s' ];then mkdir -p %s'/%s';fi\n",dst,p_base_inst_bk,dst)
+        activate.printf("mkdir -p '%s' || exit 1\n",dst)
         if perm != '-'
-          activate.printf("chmod %s %s || exit 1\n",perm,dst)
+          activate.printf("chmod %s '%s' || exit 1\n",perm,dst)
         end
         if own == '-'
-          activate.printf("chown %s %s || exit 1\n",cf.defown,dst)
+          activate.printf("chown %s '%s' || exit 1\n",cf.defown,dst)
 	else
-          activate.printf("chown %s %s || exit 1\n",own,dst)
+          activate.printf("chown %s '%s' || exit 1\n",own,dst)
         end
       }
       cf.files.each {
         |dst,src,perm,own|
         LocalCmd.cp(src,tmp_base+'/'+dst)
         # activate
-        activate.printf("mv -fT %s %s/%s || true\n",dst,p_base_inst_bk,dst)
-        activate.printf("cp -T %s %s || exit 1\n",p_base_inst_pkg+'/'+dst,dst)
+        activate.printf("mv -fT '%s' %s'/%s' || true\n",dst,p_base_inst_bk,dst)
+        activate.printf("cp -T %s'/%s' '%s' || exit 1\n",p_base_inst_pkg,dst,dst)
         if perm != '-'
-          activate.printf("chmod %s %s || exit 1\n",perm,dst)
+          activate.printf("chmod %s '%s' || exit 1\n",perm,dst)
         end
         if own == '-'
-          activate.printf("chown %s %s || exit 1\n",cf.defown,dst)
+          activate.printf("chown %s '%s' || exit 1\n",cf.defown,dst)
 	else
-          activate.printf("chown %s %s || exit 1\n",own,dst)
+          activate.printf("chown %s '%s' || exit 1\n",own,dst)
         end
         # dectivate
-        deactivate.printf("rm -f %s \n",dst)
-        deactivate.printf("mv -fT %s/%s %s \n",p_base_inst_bk,dst,dst)
+        deactivate.printf("rm -f '%s' \n",dst)
+        deactivate.printf("mv -fT %s'/%s' '%s' \n",p_base_inst_bk,dst,dst)
       }
       cf.links.each {
         |dst,src,perm,own|
         # LocalCmd.ln(src,tmp_base+'/'+dst)
         # activate
-        activate.printf("mv -fT %s %s/%s || true\n",dst,p_base_inst_bk,dst)
-        activate.printf("ln -sfn %s %s || exit 1\n",src,dst)
+        activate.printf("mv -fT '%s' %s'/%s' || true\n",dst,p_base_inst_bk,dst)
+        activate.printf("ln -sfn '%s' '%s' || exit 1\n",src,dst)
         # dectivate
-        deactivate.printf("rm -f %s \n",dst)
-        deactivate.printf("mv -fT %s/%s %s \n",p_base_inst_bk,dst,dst)
+        deactivate.printf("rm -f '%s' \n",dst)
+        deactivate.printf("mv -fT %s'/%s' '%s' \n",p_base_inst_bk,dst,dst)
       }
       cf.dirs.sort.reverse.each {
         |dst,src,perm,own|
         # deactivate
-        deactivate.printf("rmdir %s || true\n",dst)
-        deactivate.printf("if [ -d %s/%s ];then mkdir -p %s;fi\n",p_base_inst_bk,dst,dst)
+        deactivate.printf("rmdir '%s' || true\n",dst)
+        deactivate.printf("if [ -d %s'/%s' ];then mkdir -p '%s';fi\n",p_base_inst_bk,dst,dst)
       }
       activate.printf("%s/%s || exit 1\n",p_base_inst_pkg,Def::FN_POSTACTIVATE)
       deactivate.printf("%s/%s\n",p_base_inst_pkg,Def::FN_POSTDEACTIVATE)
