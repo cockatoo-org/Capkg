@@ -74,7 +74,7 @@ Options  :
      -i, --install-root=<path>      : Install root path.
                                        (Generate operation only)
      --clean                        : Clean all cache.
-                                       (Self operation only)
+                                       (Setup operation only.)
      --require=<require definition> : Require definitions. ( '<package-name> <min-version> <max-version>' )
                                        (Generate operation only)
                                        (Multi-specifiable) 

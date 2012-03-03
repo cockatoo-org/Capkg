@@ -34,6 +34,8 @@ module Capkg
     # OWNER
     RUNNER                   = 'root'
     GROUP                    = 'bin'
+    # OP USER
+    USER                     = nil
     # LOG
     LOG_EXPIRE_DATE          = 90      
     # MD5
@@ -147,6 +149,10 @@ module Capkg
         print "Nothing " + NAMESPACE_CONFIG + "\n"
       end
     end
+    if not USER
+      USER=ENV['USER']
+    end
+
 
     SSH_REPOSITORY_PATH     = SSH_REPOSITORY_PATH+'/'+NAMESPACE
     HTTP_REPOSITORY         = HTTP_REPOSITORY ? HTTP_REPOSITORY+'/'+NAMESPACE : nil
@@ -159,7 +165,8 @@ module Capkg
     MD5_SSH_REPOSITORY_PATH  = MD5_SSH_REPOSITORY_PATH  ? MD5_SSH_REPOSITORY_PATH+'/'+NAMESPACE  : SSH_REPOSITORY_PATH
 
     CAPKG_BASE=CAPKG_BASE+'/'+NAMESPACE
-    BASE_TMP= CAPKG_BASE+'/' + DIR_TMP
+    BASE_TMP_ROOT= CAPKG_BASE+'/' + DIR_TMP
+    BASE_TMP= BASE_TMP_ROOT+'/'+USER
     BASE_PKG= CAPKG_BASE+'/' + DIR_PKG
     BASE_INST=CAPKG_BASE+'/' + DIR_INST
     FETCHTXT= BASE_PKG + '/' + FN_FETCHTXT
@@ -1045,34 +1052,32 @@ module Capkg
         if clean_flg
           $capself.run_task(host,sprintf('rm -rf %s %s',
                                          Def::BASE_PKG, 
-                                         Def::BASE_TMP),false)
+                                         Def::BASE_TMP_ROOT),false)
         end
         $capself.run_task(host,sprintf('mkdir -p %s %s %s && ' + 
-                                       'chown %s:%s %s %s %s',
-                                       Def::CAPKG_BASE,
-                                       Def::BASE_PKG, 
-                                       Def::BASE_INST,
+                                       'chown %s:%s %s %s %s' , 
+                                       Def::CAPKG_BASE,Def::BASE_PKG,Def::BASE_INST,
                                        Def::RUNNER,Def::GROUP,
                                        Def::CAPKG_BASE,Def::BASE_PKG, Def::BASE_INST ),false)
-        # $capself.run_task(host,'mkdir -p ' + Def::BASE + ' ' + Def::BASE_PKG + ' ' + Def::BASE_INST )
-        # $capself.run_task(host,'chown ' + Def::RUNNER + ':' + Def::GROUP + ' ' + Def::BASE + ' ' + Def::BASE_PKG + ' ' + Def::BASE_INST )
-        # @@@ not secure ( how to use temporary-space with secure )
+
         $capself.run_task(host,sprintf('mkdir -p %s && ' + 
                                        'chmod 777 %s && ' + 
-                                       'chown %s:%s %s',
+                                       'chown %s:%s %s && ' +
+                                       'mkdir -m 700 %s && ' +
+                                       'chown %s %s ' ,
+                                       Def::BASE_TMP_ROOT,
+                                       Def::BASE_TMP_ROOT,
+                                       Def::RUNNER,Def::GROUP, Def::BASE_TMP_ROOT,
                                        Def::BASE_TMP,
-                                       Def::BASE_TMP,
-                                       Def::RUNNER,Def::GROUP,
-                                       Def::BASE_TMP ),false)
-        # $capself.run_task(host,'mkdir -p -m 777 ' Def::BASE_TMP)
+                                       Def::USER,Def::BASE_TMP
+                                       ),false)
+
         $capself.run_task(host,sprintf('touch %s %s && ' + 
                                        'chown %s:%s %s %s',
                                        Def::FETCHTXT,Def::INSTTXT,
                                        Def::RUNNER,Def::GROUP,
                                        Def::FETCHTXT,Def::INSTTXT))
-        # $capself.run_task(host,'touch ' + Def::FETCHTXT + ' ' + Def::INSTTXT)
-        # $capself.run_task(host,'chown ' + Def::RUNNER + ':' + Def::GROUP + ' ' + Def::CAPKG_BASE + ' ' + Def::BASE_TMP + ' ' + Def::BASE_PKG + ' ' + Def::BASE_INST + ' '  + Def::FETCHTXT + ' ' + Def::INSTTXT)
-        # $capself.run_task(host,'chmod 644 ' + Def::FETCHTXT + ' ' + Def::INSTTXT)
+
         get_uname(host)
       rescue => ex
         Logger.errmsg(host,'*',-1,''," @ [setup_host] failure \n    caused by => %s",ex.to_s)
