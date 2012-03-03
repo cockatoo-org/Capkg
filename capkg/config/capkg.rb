@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+## -*- coding: utf-8 -*-
 # capkg.rb - Capkg core.
 #   Capkg is the packager on the Capistrano.
 # 
@@ -6,7 +6,7 @@
 #   Date: 2011/05/26
 require 'open3'
 module Capkg
-  VERSION = "1.1.12"
+  VERSION = "1.1.15"
   SELF_NAME = 'CAPKG'
   LOCAL_CAPKG_DIR = File.dirname(__FILE__)
   # Log lv
@@ -39,7 +39,6 @@ module Capkg
     # LOG
     LOG_EXPIRE_DATE          = 90      
     # MD5
-    MD5_CHECK                = 'no'
     MD5_FETCH_METHOD         = nil
     MD5_REPOSITORY_METHOD    = nil
     MD5_HTTP_REPOSITORY      = nil
@@ -234,7 +233,7 @@ module Capkg
       @@LOG.close
     end
     def self.errmsg(host,pkgname,version,pkguname,fmt,*args)
-      estr = 'ERROR :'+fmt(host,pkgname,version,pkguname,fmt,*args)
+      estr = 'ERROR  :'+fmt(host,pkgname,version,pkguname,fmt,*args)
       if Def::CAPKG_LOGLV >= CAPKG_LOG_ERROR
         printf('%s',estr)
       end
@@ -242,7 +241,7 @@ module Capkg
       return estr
     end
     def self.warnmsg(host,pkgname,version,pkguname,fmt,*args)
-      estr = 'WARN :'+fmt(host,pkgname,version,pkguname,fmt,*args)
+      estr = 'WARN   :'+fmt(host,pkgname,version,pkguname,fmt,*args)
       if Def::CAPKG_LOGLV >= CAPKG_LOG_WARN
         printf('%s',estr)
       end
@@ -250,7 +249,7 @@ module Capkg
       return estr
     end
     def self.notice(host,pkgname,version,pkguname,fmt,*args)
-      estr = 'NOTICE:'+fmt(host,pkgname,version,pkguname,fmt,*args)
+      estr = 'NOTICE :'+fmt(host,pkgname,version,pkguname,fmt,*args)
       if Def::CAPKG_LOGLV >= CAPKG_LOG_NOTICE
         printf('%s',estr)
       end
@@ -258,7 +257,7 @@ module Capkg
       return estr
     end
     def self.info(host,pkgname,version,pkguname,fmt,*args)
-      estr = 'INFO  :'+fmt(host,pkgname,version,pkguname,fmt,*args)
+      estr = 'INFO   :'+fmt(host,pkgname,version,pkguname,fmt,*args)
       if Def::CAPKG_LOGLV >= CAPKG_LOG_INFO 
         printf('%s',estr)
       end
@@ -266,7 +265,7 @@ module Capkg
       return estr
     end
     def self.msg(host,pkgname,version,pkguname,fmt,*args)
-      estr = 'MSG   :'+fmt(host,pkgname,version,pkguname,fmt,*args)
+      estr = 'MSG    :'+fmt(host,pkgname,version,pkguname,fmt,*args)
       if Def::CAPKG_LOGLV >= CAPKG_LOG_MESSAGE
         printf('%s',estr)
       end
@@ -274,7 +273,7 @@ module Capkg
       return estr
     end
     def self.debug(host,pkgname,version,pkguname,fmt,*args)
-      estr = 'DEBUG   :'+fmt(host,pkgname,version,pkguname,fmt,*args)
+      estr = 'DEBUG  :'+fmt(host,pkgname,version,pkguname,fmt,*args)
       if Def::CAPKG_LOGLV >= CAPKG_LOG_DEBUG
         printf('%s',estr)
       end
@@ -455,14 +454,39 @@ module Capkg
       return dst
     end
 
-    def md5_check(pkgname,version,pkguname)
-      if Def::MD5_CHECK == 'yes'
-        md5=fetch_md5_local(pkgname,version,pkguname)
-        LocalCmd.run_system(sprintf('cd %s && md5sum -c %s > /dev/null',Def::LOCAL_PKG + '/' + pkgname,md5))
-      end
+    def md5_token(md5file)
+      re = /^\s*(\S+)\s+(.*)?$/
+      File.open(md5file,'r') {
+        |fp|
+        fp.each { 
+          |line|
+          if re =~ line
+            return $1
+            break
+          end
+        }
+      }
+      raise Logger.errmsg('LOCAL','*',-1,'','Invalid md5sum file ! %s',md5sum)
     end
-    module_function :md5_check
 
+    def md5_check(pkgname,version,pkguname)
+      md5file=fetch_md5_local(pkgname,version,pkguname)
+      begin
+        LocalCmd.run_system(sprintf('cd %s && md5sum --status -c %s',Def::LOCAL_PKG + '/' + pkgname,md5file))
+      rescue => ex
+        req=Env.p_local_require(pkgname,version,pkguname)
+        pkg=Env.p_local_pkg(pkgname,version,pkguname)
+        Logger.errmsg('LOCAL',pkgname,version,pkguname," @ [fetch_require_local] invalid cache file !! Please retry.")
+        LocalCmd.rm(req)
+        LocalCmd.rm(pkg)
+        raise ex
+      end
+      return md5_token(md5file)
+    end
+  
+    module_function :md5_check
+    module_function :md5_token
+  
     def self.fetch_require_local(pkgname,version,pkguname)
       LocalCmd.mkdir(Def::LOCAL_PKG + '/' + pkgname)
       src=Env.p_require(pkgname,version,pkguname)
@@ -473,12 +497,11 @@ module Capkg
 
     def self.fetch_pkg_local(pkgname,version,pkguname)
       LocalCmd.mkdir(Def::LOCAL_PKG + '/' + pkgname)
+      fetch_require_local(pkgname,version,pkguname)
       src=Env.p_capkg(pkgname,version,pkguname)
       dst=Env.p_local_pkg(pkgname,version,pkguname)
       PKG_ACCESS.fetch(src,dst,false,pkgname,version,pkguname)
-      fetch_require_local(pkgname,version,pkguname)
-      md5_check(pkgname,version,pkguname)
-      return dst
+      return md5_check(pkgname,version,pkguname)
     end
 
     def self.upload_alltxt()
@@ -503,7 +526,9 @@ module Capkg
                                   Def::LOCAL_TMP,
                                   Env.fn_capkg(pkgname,version,pkguname),                                  
                                   tmp_md5))
+      md5 = md5_token(tmp_md5)
       MD5_ACCESS.upload_command(tmp_md5,rep_md5,pkgname,version,pkguname)
+      return md5
     end
 
     def self.remove_pkg(pkgname,version,pkguname)
@@ -631,7 +656,7 @@ module Capkg
     end
     def initialize(f)
       @fname = f
-      re = /^\s*(\S+)\s+([\.\d]+)(?:\s+(\S+)\s*)?$/
+      re = /^\s*(\S+)\s+([\.\d]+)\s+(\S+)(?:\s+(\S+))?\s*$/
       @data = {}
       File.open(@fname,'r') {
         |fp|
@@ -642,12 +667,13 @@ module Capkg
               @data[$1] = []
             end
             v = Pkg.str2v($2)
-            if defined? $3
-              uname = $3
+            uname = $3
+            if defined? $4
+              md5 = $4
             else
-              uname = Def::NOARCH
+              md5 = ''
             end
-            @data[$1] << [v,uname]
+            @data[$1] << [v,uname,md5]
           end
         }
       }
@@ -661,45 +687,66 @@ module Capkg
     end
     attr_accessor :data
 
+    # def dump()
+    #   File.open(@fname,'w') {
+    #     |fp|
+    #     @data.each{
+    #       |pn,vs|
+    #       vs.each{
+    #         |pv,uname,md5|
+    #         print "\n" + pn + ' ' + Pkg.v2str(pv)  + ' ' + uname + ' ' + md5
+    #       }
+    #     }
+    #   }
+    # end
+
+    def save()
+      File.open(@fname,'w') {
+        |fp|
+        @data.each{
+          |pn,vs|
+          vs.each{
+            |pv,uname,md5|
+            fp.print "\n" + pn + ' ' + Pkg.v2str(pv)  + ' ' + uname + ' ' + md5
+          }
+        }
+      }
+    end
+
     def delete(pkgname,version=nil,pkguname=nil)
       if version==nil
         @data.delete(pkgname)
       else
         if @data[pkgname] != nil
+          dels = []
           @data[pkgname].each {
-            |v,uname|
+            |v,uname,md5|
             if v == version
               if pkguname == nil or pkguname==uname
-                @data[pkgname].delete([v,uname])
+                dels << [v,uname,md5]
               end
             end
+          }
+          dels.each{
+            |v,uname,md5|
+            @data[pkgname].delete([v,uname,md5])
           }
           if @data[pkgname].length == 0
             @data.delete(pkgname)
           end
         end
       end
-      File.open(@fname,'w') {
-        |fp|
-        @data.each{
-          |pn,vs|
-          vs.each{
-            |pv,uname|
-            fp.print "\n" + pn + ' ' + Pkg.v2str(pv)  + ' ' + uname 
-          }
-        }
-      }
+      self.save()
     end
-    def add(pkgname,version,uname)
+    def add(pkgname,version,pkguname,md5)
+      self.delete(pkgname,version,pkguname)
       if @data[pkgname] == nil 
         @data[pkgname] = []
       end
-      @data[pkgname] << [version,uname]
-      File.open(@fname,'a+') {
-        |fp|
-        fp.print "\n" + pkgname + ' ' + Pkg.v2str(version) + ' ' + uname
-      }
+      @data[pkgname] << [version,pkguname,md5]
+      self.save()
     end
+
     def capkg()
       if @data[Capkg::SELF_NAME] != nil
         return @data[Capkg::SELF_NAME].first.first
@@ -720,12 +767,12 @@ module Capkg
         end
         if cre =~ k
           vss.each {
-            |v,uname|
+            |v,uname,md5|
             if pkguname == '' or Capkg.uname_rule(uname,pkguname)
               if not ret.member?(k)
                 ret[k] = []
               end
-              ret[k] << [v,uname]
+              ret[k] << [v,uname,md5]
               break
             end
           }
@@ -747,12 +794,12 @@ module Capkg
         end
         if cre =~ k  
           vss.each {
-            |v,uname|
+            |v,uname,md5|
             if pkguname == '' or Capkg.uname_rule(uname,pkguname)
               if not ret.member?(k)
                 ret[k] = []
               end
-              ret[k] << [v,uname]
+              ret[k] << [v,uname,md5]
             end
           }
         end
@@ -770,34 +817,22 @@ module Capkg
     def find_by_just(pname,pkguname,version)
       if @data[pname] != nil
         @data[pname].each {
-          |v,uname|
+          |v,uname,md5|
           if version == v and pkguname == uname
-            return true
+            return [v,uname,md5]
           end
         }
       end
-      return false
+      return nil
     end
-
-    # def find_by_uname_rule(pname,pkguname,version)
-    #   if @data[pname] != nil
-    #     @data[pname].each {
-    #       |v,uname|
-    #       if version == v and Capkg.uname_rule(uname,pkguname)
-    #         return uname
-    #       end
-    #     }
-    #   end
-    #   return nil
-    # end
 
     def find_by_range(pname,vfrom,vto)
       ret = []
       if @data[pname] != nil
         @data[pname].each {
-          |v,uname|
+          |v,uname,md5|
           if v >= vfrom and v<= vto
-            ret << [v,uname]
+            ret << [v,uname,md5]
           end
         }
       end
@@ -808,9 +843,9 @@ module Capkg
       ret = []
       if @data[pname] != nil
         @data[pname].each {
-          |v,uname|
+          |v,uname,md5|
           if v >= vfrom and v<= vto and Capkg.uname_rule(uname,pkguname)
-            ret << [v,uname]
+            ret << [v,uname,md5]
           end
         }
       end
@@ -843,15 +878,7 @@ module Capkg
     RE_DESCRIPTION= /^.+$/
     RE_UNAME      = /^.+$/
     RE_DEFOWN     = /^(\S+:\S+)$/
-    # RE_OWN        = /^(\S+):(\S+)$/
-    # def self.str2own (str) 
-    #   if str == '-'
-    #     return '-','-'
-    #   elsif RE_OWN =~ str
-    #     return $1,$2
-    #   end
-    #   raise 'Cannot parse as owner ! : ' + str
-    # end
+
     def initialize(f)
       @pre_act = ''
       @post_act = ''
@@ -1124,28 +1151,6 @@ module Capkg
     }
   end
 
-  def self.fetch_pkg(hosts,pkgname,version,pkguname)
-    # hosts.each {
-    #   |host|
-    #   fetch_pkg_host(host,pkgname,version,pkguname)
-    # }
-  end
-
-  def self.activate_pkg(hosts,pkgname,version,pkguname)
-    # hosts.each {
-    #   |host|
-    #   hostuname = get_uname(host)
-    #   activate_pkg_host(host,pkgname,version,pkguname,hostuname)
-    # }
-  end
-
-  def self.deactivate_pkg(hosts,pkgname)
-    # hosts.each {
-    #   |host|
-    #   deactivate_pkg_host(host,pkgname,true)
-    # }
-  end
-
   def self.install_pkg(hosts,pkgname,version,libs,yes,downgrade,ignreq)
     hosts.each {
       |host|
@@ -1384,8 +1389,8 @@ module Capkg
       if pkg.find_by_just(pkgname,pkguname,version)
         raise 'Already uploaded.'
       end
-      Repository.upload_pkg(pkgname,version,pkguname)
-      pkg.add(pkgname,version,pkguname)
+      md5 = Repository.upload_pkg(pkgname,version,pkguname)
+      pkg.add(pkgname,version,pkguname,md5)
       Repository.upload_alltxt()
     rescue => ex
       Logger.errmsg('LOCAL',pkgname,version,pkguname," @ [upload_pkg] failure \n    caused by => %s",ex.to_s)
@@ -1480,35 +1485,43 @@ module Capkg
 
   def self.fetch_pkg_host(host,pkgname,version,pkguname)
     Logger.info(host,pkgname,version,pkguname,' - [fetch_pkg_host] start')
+    md5=''
     begin
       # pkguname = PkgList.remote_all_txt().find_by_uname_rule(pkgname,hostuname,version)
-      Repository.fetch_pkg_local(pkgname,version,pkguname)
+      md5 = Repository.fetch_pkg_local(pkgname,version,pkguname)
       local_pkg=Env.p_local_pkg(pkgname,version,pkguname)
       base_pkg=Env.p_base_pkg(pkgname,version,pkguname)
       LocalCmd.mkdir(Def::LOCAL_HOST + '/' + host)
       local_fetch = Def::LOCAL_HOST + '/' + host + '/' + Def::FN_FETCHTXT
       $capself.download_task(host,Def::FETCHTXT,local_fetch)
       fpkg = PkgList.parse(local_fetch)
-      if ! fpkg.find_by_just(pkgname,pkguname,version) 
+      rpkg = fpkg.find_by_just(pkgname,pkguname,version) 
+
+      use_cache = true
+      if ! rpkg 
+        use_cache = false
+      elsif rpkg[2] != md5
+        Logger.warnmsg(host,pkgname,version,pkguname,' - [fetch_pkg_host] md5 unmatch ! remote=%s  local=%s ',rpkg[2],md5)
+        use_cache = false
+      elsif $g_nocache
+        Logger.notice(host,pkgname,version,pkguname,' - [fetch_pkg_host] refetch option.')
+        use_cache = false
+      end
+      if ! use_cache
         Logger.notice(host,pkgname,version,pkguname,' - [fetch_pkg_host] fetching.')
         $capself.upload_task(host,local_pkg,base_pkg)
-        fpkg.add(pkgname,version,pkguname)
-        $capself.upload_task(host,local_fetch,Def::FETCHTXT)
-      elsif $g_nocache
-        Logger.notice(host,pkgname,version,pkguname,' - [fetch_pkg_host] re-fetching.')
-        $capself.upload_task(host,local_pkg,base_pkg)
-        fpkg.add(pkgname,version,pkguname)
+        fpkg.add(pkgname,version,pkguname,md5)
         $capself.upload_task(host,local_fetch,Def::FETCHTXT)
       else
         Logger.notice(host,pkgname,version,pkguname,' - [fetch_pkg_host] already fetched.(skip)')
       end
-      return true
     rescue => ex
       Logger.errmsg(host,pkgname,version,pkguname," @ [fetch_pkg_host] failure \n    caused by => %s",ex.to_s)
       Capistrano::Logger.plast()
       raise ex
     end
     Logger.info(host,pkgname,version,pkguname,' - [fetch_pkg_host] success')
+    return md5
   end
 
   def self.activate_pkg_host(host,pkgname,version,pkguname,hostuname)
@@ -1526,8 +1539,8 @@ module Capkg
         if not activate_check(host,pkgname,version,ipkg,pkguname,hostuname)
           raise 'Fail to activate.'
         end
-        fetch_pkg_host(host,pkgname,version,pkguname)
-        # $capself.run_task(host,'mkdir -p ' + p_base_inst_pkg + ' ' + p_base_inst_bk+sprintf(';tar xz -C %s -f %s',p_base_inst_pkg,base_pkg)+sprintf(';chmod 744 %s/%s %s/%s %s/%s %s/%s %s/%s %s/%s',p_base_inst_pkg,Def::FN_ACTIVATE,p_base_inst_pkg,Def::FN_PREACTIVATE,p_base_inst_pkg,Def::FN_POSTACTIVATE,p_base_inst_pkg,Def::FN_DEACTIVATE,p_base_inst_pkg,Def::FN_PREDEACTIVATE,p_base_inst_pkg,Def::FN_POSTDEACTIVATE)+';'+p_base_inst_pkg+'/'+Def::FN_ACTIVATE)
+        md5 = fetch_pkg_host(host,pkgname,version,pkguname)
+
         $capself.run_task(host,sprintf('mkdir -p %s %s && ' +
                                        'cd %s && '+
                                        'tar xz -f %s && ' +
@@ -1543,7 +1556,7 @@ module Capkg
                                        p_base_inst_pkg,Def::FN_PREDEACTIVATE,
                                        p_base_inst_pkg,Def::FN_POSTDEACTIVATE,
                                        p_base_inst_pkg,Def::FN_ACTIVATE))
-        ipkg.add(pkgname,version,pkguname)
+        ipkg.add(pkgname,version,pkguname,md5)
         $capself.upload_task(host,local_inst,Def::INSTTXT)
       else
         Logger.notice(host,pkgname,version,pkguname,' - [activate_pkg_host] already installed. <%s:%s> (skip)',pkgname,Pkg.v2str(version))

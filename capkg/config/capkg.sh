@@ -46,50 +46,49 @@ Operation:
 Options  :
      -h, --help                     : This message.
      -N, --namespace                : Namespace
-                                       (Always operation.)
      -r, --remote=<hostname>        : Remote target host.
-                                       (Multi-specifiable) 
+                                         Multi-specifiable
      -l, --host-list=<hostlist>     : Specify file of remote host list.
-                                       (Separated by changing line) 
+                                         Separated by changing line
      -p, --package-name=<name>      : Package name.
      -v, --version=<version>        : Package version.
      -u, --uname=<uname>            : Target uname
      -c, --capkcf=<config file>     : Package config file.
-                                       (Create Upload Invalidate operation.)
+                                         [ Create , Upload , Invalidate ]
      -y, --yes                      : Auto yes answer.
-                                       (Install / Uninstall operation.)
+                                         [ Install , Uninstall ]
      -d, --downgrade                : Allow downgrade.
-                                       (Install operation.)
+                                         [ Install ]
      -n, --ignore-cache             : Ignore fetched package.
-                                       (Install operation.)
+                                         [ Install ]
      -a, --search-all               : Search all version.
-                                       (Search operation.)
-     -f, --force                    : Force operation.
-                                       (Install / Uninstall operation.)
-     --ignore-req                   : Ignore require.
-                                       (Install / Uninstall operation.)
+                                         [ Search ]
+     -f, --force                    : Force uninstall. 
+                                         [ Uninstall ]
+     --ignore-req                   : Ignore require requiring tree.
+                                         [ Install , Uninstall ]
+     --clean                        : Clean all cache.
+                                         [ Self , Setup ]
      -s, --scan-dir=<file or dir>   : Scan directory.
-                                       (Generate operation only)
+                                         [ Generate ]
                                        (Multi-specifiable) 
      -i, --install-root=<path>      : Install root path.
-                                       (Generate operation only)
-     --clean                        : Clean all cache.
-                                       (Setup operation only.)
+                                         [ Generate ]
      --require=<require definition> : Require definitions. ( '<package-name> <min-version> <max-version>' )
-                                       (Generate operation only)
+                                         [ Generate ]
                                        (Multi-specifiable) 
      --pre-activate=<script>        : Pre-activate script.
-                                       (Generate operation only)
+                                         [ Generate ]
      --post-activate=<script>       : Post-activate script.
-                                       (Generate operation only)
+                                         [ Generate ]
      --pre-deactivate=<script>      : Pre-deactivate script.
-                                       (Generate operation only)
+                                         [ Generate ]
      --post-deactivate=<script>     : Post-deactivate script.
-                                       (Generate operation only)
+                                         [ Generate ]
      --cmd                          : Command
-                                       (Shell operation only.)
+                                         [ Shell ]
      --cmd-file                     : Shell script.
-                                       (Shell operation only.)
+                                         [ Shell ]
 USAGE
     exit $1
 }

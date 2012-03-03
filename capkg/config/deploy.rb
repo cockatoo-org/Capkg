@@ -107,10 +107,7 @@ namespace :capkg do
     Capkg::Logger.start_log(a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD START ( createrep ) ')
     Capkg.setup_hosts([Capkg::Def::SSH_REPOSITORY_HOST],a_clean)
     run_task(Capkg::Def::SSH_REPOSITORY_HOST,sprintf('mkdir -p -m 775 %s && chown %s:%s %s',Capkg::Def::SSH_REPOSITORY_PATH,Capkg::Def::RUNNER,Capkg::Def::GROUP,Capkg::Def::SSH_REPOSITORY_PATH ))
-    # run_task(Capkg::Def::SSH_REPOSITORY_HOST,'mkdir -p ' + Capkg::Def::SSH_REPOSITORY_PATH)
     run_task(Capkg::Def::SSH_REPOSITORY_HOST,sprintf('touch %s/%s && chown %s:%s %s/%s && chmod 664 %s/%s',Capkg::Def::SSH_REPOSITORY_PATH,Capkg::Def::FN_ALLTXT,Capkg::Def::RUNNER,Capkg::Def::GROUP,Capkg::Def::SSH_REPOSITORY_PATH,Capkg::Def::FN_ALLTXT,Capkg::Def::SSH_REPOSITORY_PATH,Capkg::Def::FN_ALLTXT))
-    # run_task(Capkg::Def::SSH_REPOSITORY_HOST,'echo \' \' >> '+Capkg::Def::SSH_REPOSITORY_PATH+'/'+Capkg::Def::FN_ALLTXT)
-    # run_task(Capkg::Def::SSH_REPOSITORY_HOST,'echo \'#\' >> '+Capkg::Def::SSH_REPOSITORY_PATH+'/'+Capkg::Def::FN_ALLTXT)
     Capkg::Logger.end_log(a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD SUCCESS ( createrep ) ')
   end
   #------------------------------
@@ -201,45 +198,6 @@ namespace :capkg do
     end
     Capkg::Logger.end_log(a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD SUCCESS ( list ) ')
   end
-  # #------------------------------
-  # #  Download package to target hosts
-  # task :fetch do
-  #   Capkg::Logger.start_log(a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD START ( fetch ) ')
-  #   begin
-  #     Capkg::Repository.fetch_alltxt()
-  #     Capkg.fetch_pkg(a_hosts,a_pkg,Capkg::Pkg.str2v(a_version),a_uname)
-  #   rescue => msg
-  #     Capkg::Logger.errmsg('LOCAL',a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD FAILURE ( fetch ) ')
-  #     exit(1)
-  #   end
-  #   Capkg::Logger.end_log(a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD SUCCESS ( fetch ) ')
-  # end
-  #------------------------------
-  #  Install a package to target hosts
-  # task :activate do
-  #   Capkg::Logger.start_log(a_pkg,Capkg::Pkg.str2v(a_version),'CMD START ( activate ) ')
-  #   begin
-  #     Capkg::Repository.fetch_alltxt()
-  #     Capkg.activate_pkg(a_hosts,a_pkg,Capkg::Pkg.str2v(a_version),a_uname)
-  #   rescue => msg
-  #     Capkg::Logger.errmsg('LOCAL',a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD FAILURE ( activate ) ')
-  #     exit(1)
-  #   end
-  #   Capkg::Logger.end_log(a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD SUCCESS ( activate ) ')
-  # end
-  # #------------------------------
-  # #  Uninstall a package from target hosts
-  # task :deactivate do
-  #   Capkg::Logger.start_log(a_pkg,Capkg::Pkg.str2v(a_version),'CMD START ( deactivate ) ')
-  #   begin
-  #     Capkg::Repository.fetch_alltxt()
-  #     Capkg.deactivate_pkg(a_hosts,a_pkg)
-  #   rescue => msg
-  #     Capkg::Logger.errmsg('LOCAL',a_pkg,Capkg::Pkg.str2v(a_version),'CMD FAILURE ( deactivate ) ')
-  #     exit(1)
-  #   end
-  #   Capkg::Logger.end_log(a_pkg,Capkg::Pkg.str2v(a_version),a_uname,'CMD SUCCESS ( deactivate ) ')
-  # end
   #------------------------------
   #  Install package with require packages to target hosts
   task :install do
@@ -414,7 +372,6 @@ def upload_task(host,src,dst)
       raise '[upload_task] ' + ex.to_s + "\n      host : "+host+"\n        "+src+"\n     => "+ dst
     end
     run_task(host,sprintf('rm -f %s && mkdir -p %s && chown %s:%s %s && cp -f %s %s && chown %s:%s %s && rm -f %s',dst,File.dirname(dst),Capkg::Def::RUNNER,Capkg::Def::GROUP,File.dirname(dst),tmp,dst,Capkg::Def::RUNNER,Capkg::Def::GROUP,dst,tmp))
-    # run_task(host,'mkdir -p ' + File.dirname(dst) + '&& cp -f ' + tmp + ' ' + dst + '&& rm -f ' + tmp)
   end
   capkg_task
 end
