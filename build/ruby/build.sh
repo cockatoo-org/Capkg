@@ -47,10 +47,11 @@ run bash rvm-installer stable
 run source "${RVM_PATH}/scripts/rvm"
 run rvm install 1.8.7
 run rvm use 1.8.7
+run sudo chmod 755 ${RVM_PATH}
 run gem install capistrano
 run cap --version
 #rvm install 1.9.1
 #rvm use 1.9.1
 run ruby -v
 run sudo chown root:bin -R ${RVM_PATH}
-run sudo chmod 777 -R ${RVM_PATH}
+#run sudo chmod 755 -R ${RVM_PATH}
