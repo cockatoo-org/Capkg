@@ -28,18 +28,18 @@ Operation:
      list      : View installed packages into the specified host.
                  Valid options -r (-p)
      install   : Install or update the specified package to target host.
-                 Valid options -r -p (-v -n -d -y -f --ignore-require )
+                 Valid options -r or -l and -p (-v -n -d -y -f --ignore-require )
      uninstall : Unnstall the specified package from target host.
-                 Valid options -p -r (-y -f --ignore-require )
+                 Valid options -r or -l and -p (-y -f --ignore-require )
      shell     : Run shell command at target hosts.
                  Valid options --cmd --cmd-file -r 
   Developer's operation:
      create    : Create the package.
                  Valid options -c
      upload    : Upload the package to remote repository.
-                 Valid options  -c -p -v
+                 Valid options  -c or ( -p -v -u )
      invalidate: Invalidate the updated package.
-                 Valid options  -c -p -v
+                 Valid options  -c or ( -p -v -u )
      generate  : Generate the package-config skelton.
                  Valid options -p -s -i (-v --require --pre-activate --post-activate --pre-deactivate --post-deactivate)
 
