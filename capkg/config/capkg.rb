@@ -1775,15 +1775,31 @@ module Capkg
         if rlist.member?(pn)
           effective_vs = vs
           if rlist[pn].is_a?(Array)
-            effective_vs = (rlist[pn] & vs)
+            # effective_vs = (rlist[pn] & vs)
+            effective_vs = []
+            vs.each {
+              |rv,runame|
+              rlist[pn].each{
+                |lv,luname,lhash|
+                if lv == rv and luname == runame
+                  effective_vs.push([lv,luname,lhash])
+                end
+              }
+            }
             if effective_vs.length == 0
               return nil
             end
           else
-            v,uname = rlist[pn].to_a.first
-            if not vs.include?([v,uname])
-              return nil
-            end
+            lv,luname = rlist[pn].to_a.first
+            # if not vs.include?([v,uname])
+            #  return nil
+            # end
+            vs.each {
+              |rv,runame|
+              if not ( lv == rv and luname == runame )
+                return nil
+              end
+            }
             effective_vs = rlist[pn]
           end
           rlist[pn] = effective_vs
@@ -1793,7 +1809,6 @@ module Capkg
       }
       return rlist
     end
-
     prlist.each{
       |pn,vss|
       if vss.is_a?(Array)
