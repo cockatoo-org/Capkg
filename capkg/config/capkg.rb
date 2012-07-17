@@ -1767,7 +1767,14 @@ module Capkg
     }
     return ords
   end
-
+  def self.dump(msg,list)
+    p '=========' + msg + '========';
+    list.each {
+      |n,vs|
+      print n + ' ';
+      p vs
+    }
+  end
   def self.install_require_check(pkgname,version,prlist,installed,hostuname)
     Logger.notice('LOCAL',pkgname,version,'',' - [install_require_check] start')
     def self.narrowing_require_list(requires,prlist)
@@ -1799,9 +1806,10 @@ module Capkg
             # end
             vs.each {
               |rv,runame|
-              if not ( lv == rv and luname == runame )
-                return nil
+              if ( lv == rv and luname == runame )
+                break
               end
+              return nil
             }
             effective_vs = rlist[pn]
           end
