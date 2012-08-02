@@ -1777,6 +1777,19 @@ module Capkg
   end
   def self.install_require_check(pkgname,version,prlist,installed,hostuname)
     Logger.notice('LOCAL',pkgname,version,'',' - [install_require_check] start')
+    def self.version_filter(list,vs)
+      ret = []
+      vs.each {
+        |rv,runame|
+        list.each{
+          |lv,luname,lhash|
+          if lv == rv and luname == runame
+            ret.push([lv,luname,lhash])
+          end
+        }
+      }
+      return ret;
+    end
     def self.narrowing_require_list(requires,prlist)
       rlist = prlist.dup
       requires.each{
@@ -1785,17 +1798,18 @@ module Capkg
         if rlist.member?(pn)
           effective_vs = vs
           if rlist[pn].is_a?(Array)
-            # effective_vs = (rlist[pn] & vs)
-            effective_vs = []
-            vs.each {
-              |rv,runame|
-              rlist[pn].each{
-                |lv,luname,lhash|
-                if lv == rv and luname == runame
-                  effective_vs.push([lv,luname,lhash])
-                end
-              }
-            }
+             # effective_vs = (rlist[pn] & vs)
+#            effective_vs = []
+#            vs.each {
+#              |rv,runame|
+#              rlist[pn].each{
+#                |lv,luname,lhash|
+#                if lv == rv and luname == runame
+#                  effective_vs.push([lv,luname,lhash])
+#                end
+#              }
+#            }
+            effective_vs = version_filter(rlist[pn],vs)
             if effective_vs.length == 0
               return nil
             end
@@ -1804,13 +1818,17 @@ module Capkg
             # if not vs.include?([v,uname])
             #  return nil
             # end
-            vs.each {
-              |rv,runame|
-              if ( lv == rv and luname == runame )
-                break
-              end
+            inc = version_filter([[lv,luname]],vs)
+            if inc.length == 0
               return nil
-            }
+            end
+#            vs.each {
+#              |rv,runame|
+#              if ( lv == rv and luname == runame )
+#                break
+#              end
+#              return nil
+#            }
             effective_vs = rlist[pn]
           end
           rlist[pn] = effective_vs
@@ -1838,7 +1856,7 @@ module Capkg
           if rlist == nil
             next
           end
-          # First condition check
+          # Target package is the fixed pont.
           rlist[pn]={v,uname}
           if not prlist[pkgname].is_a?(Array)
             if rlist[pkgname].is_a?(Array) and not rlist[pkgname].include?(prlist[pkgname])
@@ -1865,7 +1883,18 @@ module Capkg
       end
     }
     if installed != nil
-      return install_require_check(pkgname,version,installed.merge(prlist),nil,hostuname)
+      f,r,o = install_require_check(pkgname,version,installed.merge(prlist),nil,hostuname)
+      if ( ! f ) 
+        installed_all = {}
+        installed.each {
+          |n,v|
+          installed_all[n] = PkgList.remote_all_txt().find_by_name(n)
+          # Top is the current version due to refrain to update if unnecessary.
+          installed_all[n].unshift(installed[n].first)
+        }
+        f,r,o = install_require_check(pkgname,version,installed_all.merge(prlist),nil,hostuname)
+      end
+      return f,r,o
     end
     return true,prlist
   end
