@@ -6,7 +6,7 @@
 #   Date: 2011/05/26
 require 'open3'
 module Capkg
-  VERSION = "1.1.15"
+  VERSION = "1.1.16"
   SELF_NAME = 'CAPKG'
   LOCAL_CAPKG_DIR = File.dirname(__FILE__)
   # Log lv
@@ -1892,6 +1892,7 @@ module Capkg
           |n,v|
           installed_all[n] = PkgList.remote_all_txt().find_by_name(n)
           # Top is the current version due to refrain to update if unnecessary.
+          installed_all[n].delete(installed[n].first)
           installed_all[n].unshift(installed[n].first)
         }
         f,r,o = install_require_check(pkgname,version,installed_all.merge(prlist),nil,hostuname)
