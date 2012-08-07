@@ -31,9 +31,11 @@ module Capkg
     SSH_REPOSITORY_PATH      = '/usr/local/capkg-rep'
     # TARGET-HOST
     CAPKG_BASE               = '/usr/local/capkg'
-    # OWNER
+    # SCRIPT RUNTIME OWNER
     RUNNER                   = 'root'
     GROUP                    = 'bin'
+    # PACKAGE OWNER
+    DEFAULT_PKG_OWNER        = 'root:bin'
     # OP USER
     USER                     = nil
     # LOG
@@ -1233,7 +1235,7 @@ module Capkg
         |require|
         fp.printf("require %s\n",require)
       }
-      fp.printf("DEFAULT_OWNER=%s:%s\n",Def::RUNNER,Def::GROUP)
+      fp.printf("DEFAULT_OWNER=%s\n",Def::DEFAULT_PKG_OWNER)
       fp.printf("#<type> <permition> <owner> <src> <dst>\n")
       # Dirs/Files/Links
       targets.each{
